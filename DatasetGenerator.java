@@ -15,13 +15,13 @@ public class DatasetGenerator {
         System.out.println("Generating dataset with " + datasetSize + " entries...");   // Displaying the dataset size
         
         long startTime = System.currentTimeMillis();                                    // Start time for performance measurement
-        String filename = "random_dataset_" + datasetSize + ".csv";                     // Output filename based on dataset size
+        String filename = "dataset_" + datasetSize + ".csv";                            // Output filename based on dataset size
         
         try {
             generateCSV(filename, datasetSize);                                         // Generate the CSV dataset
             long endTime = System.currentTimeMillis();                                  // End time for performance measurement
             
-            System.out.println("Dataset successfully written to " + filename);
+            System.out.println("Dataset successfully written to " + filename);         
             System.out.println("Generation time: " + (endTime - startTime) + " ms");
             System.out.println("File size: " + String.format("%,d", Files.size(Paths.get(filename))) + " bytes");
         } catch (IOException e) {
@@ -30,8 +30,8 @@ public class DatasetGenerator {
     }
     
     private static void generateCSV(String filename, int datasetSize) throws IOException {
-        Set<Integer> usedIntegers = new HashSet<>();
-        Random random = new Random();
+        Set<Integer> usedIntegers = new HashSet<>();        // To ensure unique integers
+        Random random = new Random();           
         
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filename))) {
             // Write CSV header
