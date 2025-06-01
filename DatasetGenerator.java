@@ -5,21 +5,21 @@ import java.nio.file.*; // For file path handling
 public class DatasetGenerator {
     private static final int MIN_INTEGER = 1000000000;  // 1 billion
     private static final int MAX_INTEGER = 2000000000;  // 2 billion
-    private static final int MIN_STRING_LENGTH = 4;
-    private static final int MAX_STRING_LENGTH = 6;
-    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz";
-    private static final String CSV_HEADER = "integer,string\n";
+    private static final int MIN_STRING_LENGTH = 4;                         // String lengths between 4
+    private static final int MAX_STRING_LENGTH = 6;                         // and 6 characters            
+    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz";  // Characters to use in random strings
+    private static final String CSV_HEADER = "integer,string\n";            // CSV header for the dataset
     
     public static void main(String[] args) {
-        int datasetSize = determineDatasetSize();
-        System.out.println("Generating dataset with " + datasetSize + " entries...");
+        int datasetSize = determineDatasetSize();                                       // Determine dataset size based on the problem statement
+        System.out.println("Generating dataset with " + datasetSize + " entries...");   // Displaying the dataset size
         
-        long startTime = System.currentTimeMillis();                // Start time for performance measurement
-        String filename = "random_dataset_" + datasetSize + ".csv"; // Output filename based on dataset size
+        long startTime = System.currentTimeMillis();                                    // Start time for performance measurement
+        String filename = "random_dataset_" + datasetSize + ".csv";                     // Output filename based on dataset size
         
         try {
-            generateCSV(filename, datasetSize);
-            long endTime = System.currentTimeMillis();
+            generateCSV(filename, datasetSize);                                         // Generate the CSV dataset
+            long endTime = System.currentTimeMillis();                                  // End time for performance measurement
             
             System.out.println("Dataset successfully written to " + filename);
             System.out.println("Generation time: " + (endTime - startTime) + " ms");
