@@ -1,3 +1,7 @@
+// Dataset Generator for Unique Integers and Random Strings
+// Generate dataset but with using array to track used numbers
+// Slower but more memory efficient than using a set
+
 import java.util.*;
 import java.io.*;
 import java.nio.file.*;
@@ -84,6 +88,6 @@ public class DataGen {
     }
     
     private static int determineDatasetSize() {
-        return 1000;        // Change this value to adjust the dataset size as needed
+        return 10000;        // Change this value to adjust the dataset size as needed
     }
 }

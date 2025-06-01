@@ -1,3 +1,7 @@
+// Dataset Generator for Unique Integers and Random Strings
+// Generate dataset but with using set<Integer> to track used numbers
+// Faster and more memory efficient than using an array
+
 import java.util.*;     // For file handling and random number generation
 import java.io.*;       // For buffered writing to files
 import java.nio.file.*; // For file path handling
