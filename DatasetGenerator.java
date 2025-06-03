@@ -1,23 +1,20 @@
-// Dataset Generator for Unique Integers and Random Strings
-// Generate dataset but with using set<Integer> to track used numbers
-// Faster and more memory efficient than using an array
+// DatasetGenerator.java
+// Input: User-defined size of the dataset
+// Output: A CSV file containing unique integers and random strings
 
 import java.util.*;     // For file handling and random number generation
 import java.io.*;       // For buffered writing to files
 import java.nio.file.*; // For file path handling
 
 public class DatasetGenerator {
-    private static final int MIN_INTEGER = 1000000000;  // 1 billion
-    private static final int MAX_INTEGER = 2000000000;  // 2 billion
+    private static final int MIN_INTEGER = 1000000000;
+    private static final int MAX_INTEGER = 2000000000;
     private static final int MIN_STRING_LENGTH = 4;                         // String lengths between 4
     private static final int MAX_STRING_LENGTH = 6;                         // and 6 characters            
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz";  // Characters to use in random strings
-    private static final String CSV_HEADER = "integer,string\n";            // CSV header for the dataset
     
     public static void main(String[] args) {
         int datasetSize = determineDatasetSize();                                       // Determine dataset size based on the problem statement
-        System.out.println("Generating dataset with " + datasetSize + " entries...");   // Displaying the dataset size
-        
         long startTime = System.currentTimeMillis();                                    // Start time for performance measurement
         String filename = "dataset_" + datasetSize + ".csv";                            // Output filename based on dataset size
         
@@ -33,14 +30,12 @@ public class DatasetGenerator {
         }
     }
     
+    // Method to generate the CSV file with unique integers and random strings
     private static void generateCSV(String filename, int datasetSize) throws IOException {
-        Set<Integer> usedIntegers = new HashSet<>();        // To ensure unique integers
+        Set<Integer> usedIntegers = new HashSet<>();                                    // To ensure unique integers
         Random random = new Random();           
         
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filename))) {
-            // Write CSV header
-            writer.write(CSV_HEADER);
-            
             // Generate and write data
             for (int i = 0; i < datasetSize; i++) {
                 // Generate unique integer
@@ -54,17 +49,15 @@ public class DatasetGenerator {
                 String randomString = generateRandomString(random);
                 
                 // Write CSV line
-                writer.write(randomInt + "," + randomString + "\n");
-                
-                // Progress reporting
-                if (i > 0 && i % 1_000_000 == 0) {
-                    System.out.println("Generated " + String.format("%,d", i) + " entries...");
+                writer.write(randomInt + "," + randomString);
+                if(i < datasetSize - 1) {
+                    writer.write("\n");                                                 // Add a new line except for the last entry
                 }
             }
         }
     }
     
-    // Method to generate a random string of length between MIN_STRING_LENGTH and MAX_STRING_LENGTH.
+    // Method to generate a random string of length between the minimum and maximum string lengths
     private static String generateRandomString(Random random) {
         int stringLength = MIN_STRING_LENGTH + random.nextInt(MAX_STRING_LENGTH - MIN_STRING_LENGTH + 1);
         StringBuilder sb = new StringBuilder();
@@ -74,8 +67,25 @@ public class DatasetGenerator {
         return sb.toString();
     }
     
-    // Method to adjust of dataset size.
+    // Method to adjust of dataset size
     private static int determineDatasetSize() {
-        return 10000;   // 10 thousand entries should create significant sorting time differences
+        // Use a Scanner to read user input for dataset size
+        int size;
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.println("Enter the number of entries (positive integer): ");
+                try {
+                    size = scanner.nextInt();
+                    if (size > 0) {
+                        return size;                                                    // Valid input, return the size
+                    } else {
+                        System.out.println("Error: Input must be a positive integer. Try again.");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Error: Invalid input. Please enter a positive integer.");
+                    scanner.next();                                                     // Clear the invalid input from the scanner buffer
+                }
+            }
+        }
     }
 }
