@@ -29,12 +29,19 @@ public class merge_sort_step {
             int end = scanner.nextInt();
 
             // Copy the selected range into a new list
-            List<Row> selectedRows = new ArrayList<>(rows.subList(start - 1, end - 1));
+            List<Row> selectedRows = new ArrayList<>(rows.subList(start - 1, end));
 
-            // Print the selected rows before sorting
-            printRowList(selectedRows);
-            // Start the merge sort algorithm
-            mergeSort(selectedRows);
+            // Output file name based on the selected range
+            String outputFile = "merge_sort_step_" + start + "_" + end + ".txt";
+            try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+                // Print the selected rows before sorting
+                printRowList(selectedRows, writer);
+                // Start the merge sort algorithm
+                mergeSort(selectedRows, writer);
+            } catch (IOException e) {
+                System.out.println("Error writing to file: " + e.getMessage());
+            }
+            System.out.println("Merge sort completed.\nCheck " + outputFile + " for results.");
         }
     }
 
@@ -65,24 +72,24 @@ public class merge_sort_step {
     }
 
     // Print the list in [number/string, ...] format
-    static void printRowList(List<Row> list) {
-        System.out.print("[");
+    static void printRowList(List<Row> list, PrintWriter writer) {
+        writer.print("[");
         for (int i = 0; i < list.size(); i++) {
-            System.out.print(list.get(i));
+            writer.print(list.get(i));
             if (i < list.size() - 1)
-                System.out.print(", ");
+                writer.print(", ");
         }
-        System.out.println("]");
+        writer.println("]");
     }
 
     // Merge sort for List<Row>, sorting by number only
     // This method is the entry point for the merge sort algorithm
-    static void mergeSort(List<Row> list) {
-        mergeSort(list, 0, list.size() - 1);
+    static void mergeSort(List<Row> list, PrintWriter writer) {
+        mergeSort(list, 0, list.size() - 1, writer);
     }
 
     // Merge sort for List<Row>, sorting by number only
-    static void mergeSort(List<Row> list, int left, int right) {
+    static void mergeSort(List<Row> list, int left, int right, PrintWriter writer) {
         // Recursion base case: if the selectedRows has one or zero elements, it's
         // already
         // sorted
@@ -90,13 +97,13 @@ public class merge_sort_step {
             // 1. Divide: Find the middle index to split the list into two halves
             int mid = (left + right) / 2;
             // 2. Recursion: Sort the left half
-            mergeSort(list, left, mid);
+            mergeSort(list, left, mid, writer);
             // 2. Recursion: Sort the right half
-            mergeSort(list, mid + 1, right);
+            mergeSort(list, mid + 1, right, writer);
             // 3. Conquer: Merge the two sorted halves
             merge(list, left, mid, right);
             // Print the list after each merge (conquering) step
-            printRowList(list);
+            printRowList(list, writer);
         }
     }
 
