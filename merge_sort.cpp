@@ -1,9 +1,10 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <list>
-#include <string>
+#include <iostream> // For input/output operations
+#include <fstream>  // For file operations
+#include <sstream>  // For string stream operations
+#include <vector>   // For using vector to store rows
+#include <list>     // For using list to merge sorted sublists
+#include <string>   // For string manipulation
+#include <chrono>   // For timing the sort operation
 
 using namespace std;
 
@@ -14,7 +15,7 @@ struct Row
     Row(int n, const string &t) : number(n), text(t) {}
     string toString() const
     {
-        return to_string(number) + "/" + text;
+        return to_string(number) + "," + text;
     }
 };
 
@@ -44,17 +45,15 @@ vector<Row> readDataset(const string &filename)
 }
 
 // Prints the list in [number/string, ...] format to both terminal and file
-void printRowList(const vector<Row> &list, ofstream &writer)
+void printRowList(const vector<Row> &list, ofstream &writer, const string &prefix = "")
 {
     ostringstream oss;
-    oss << "[";
     for (size_t i = 0; i < list.size(); ++i)
     {
         oss << list[i].toString();
         if (i < list.size() - 1)
-            oss << ", ";
+            oss << endl;
     }
-    oss << "]";
     writer << oss.str() << endl;
 }
 
@@ -103,8 +102,6 @@ void mergeSort(vector<Row> &list, int left, int right, ofstream &writer)
         mergeSort(list, mid + 1, right, writer);
         // 3. Conquer: Merge the two sorted halves
         merge(list, left, mid, right);
-        // Print the list after each merge (conquering) step
-        printRowList(list, writer);
     }
 }
 
@@ -116,37 +113,35 @@ void mergeSort(vector<Row> &list, ofstream &writer)
 
 int main()
 {
+    // Adjust the filename as needed
     vector<Row> rows = readDataset("dataset_sample_1000.csv");
-    int start, end;
-    cout << "Select start row: ";
-    cin >> start;
-    cout << "Select end row: ";
-    cin >> end;
-
-    // if (start < 1 || end > (int)rows.size() || start >= end + 1)
-    // {
-    //     cout << "Invalid range." << endl;
-    //     return 1;
-    // }
-
-    // Copy the selected range into a new vector (start and end are 1-based, inclusive)
-    vector<Row> selectedRows(rows.begin() + (start - 1), rows.begin() + end);
-
-    // Output file name based on the selected range
+    // Get the size of the dataset
+    int size = rows.size();
+    // Create output file name based on dataset size
     ostringstream oss;
-    oss << "merge_sort_step_" << start << "_" << end << ".txt";
+    oss << "merge_sort_" << size << ".csv";
     string outputFile = oss.str();
-    ofstream writer(outputFile);
 
+    // Open the output file for writing
+    ofstream writer(outputFile);
     if (!writer.is_open())
     {
         cout << "Error writing to file: " << outputFile << endl;
         return 1;
     }
 
-    printRowList(selectedRows, writer);
-    mergeSort(selectedRows, writer);
+    cout << "Merge Sort with C++" << endl;
+    cout << "Dataset size: " << size << endl;
 
+    // Start timing the merge sort operation
+    auto startTime = chrono::high_resolution_clock::now();
+    // Start the merge sort algorithm
+    mergeSort(rows, writer);
+    auto endTime = chrono::high_resolution_clock::now();
+    // Calculate the duration of the sort operation
+    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
+    cout << "Time Taken: " << duration << " ms" << endl;
+    printRowList(rows, writer);
     cout << "Merge sort with C++ completed.\nCheck " << outputFile << " for results." << endl;
     return 0;
 }

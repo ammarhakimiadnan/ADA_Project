@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class merge_sort_step {
+public class merge_sort {
     // Helper class to store number/string pairs
     static class Row {
         int number;
@@ -14,35 +14,32 @@ public class merge_sort_step {
 
         @Override
         public String toString() {
-            return number + "/" + text;
+            return number + "," + text;
         }
     }
 
     public static void main(String args[]) {
-
-        List<Row> rows = readDataset("dataset_sample_1000.csv");
-
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Select start row: ");
-            int start = scanner.nextInt();
-            System.out.print("Select end row: ");
-            int end = scanner.nextInt();
-
-            // Copy the selected range into a new list
-            List<Row> selectedRows = new ArrayList<>(rows.subList(start - 1, end));
-
-            // Output file name based on the selected range
-            String outputFile = "merge_sort_step_" + start + "_" + end + ".txt";
-            try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
-                // Print the selected rows before sorting
-                printRowList(selectedRows, writer);
-                // Start the merge sort algorithm
-                mergeSort(selectedRows, writer);
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
-            }
-            System.out.println("Merge sort with Java completed.\nCheck " + outputFile + " for results.");
+        // Change the filename below to the generated dataset file
+        List<Row> rows = readDataset("dataset_10.csv");
+        int size = rows.size(); // Get the size of the dataset
+        String outputFile = "merge_sort_" + size + ".csv"; // Output file name based on the selected range
+        try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+            System.out.println("Merge Sort with Java");
+            System.out.println("Dataset Size: " + size);
+            // Start time for performance measurement
+            long startTime = System.currentTimeMillis();
+            // Start the merge sort algorithm
+            mergeSort(rows, writer);
+            // End time for performance measurement
+            long endTime = System.currentTimeMillis();
+            // Record the time taken for sorting
+            System.out.println("Time Taken: " + (endTime - startTime) + " ms");
+            printRowList(rows, writer);
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
         }
+        System.out.println("Merge sort with Java completed.\nCheck " + outputFile + " for results.");
+
     }
 
     // Read the dataset from a CSV file and return a list of Row objects
@@ -71,15 +68,13 @@ public class merge_sort_step {
         return rows;
     }
 
-    // Print the list in [number/string, ...] format
+    // Print the list in number/string format
     static void printRowList(List<Row> list, PrintWriter writer) {
-        writer.print("[");
         for (int i = 0; i < list.size(); i++) {
             writer.print(list.get(i));
             if (i < list.size() - 1)
-                writer.print(", ");
+                writer.println();
         }
-        writer.println("]");
     }
 
     // Merge sort for List<Row>, sorting by number only
@@ -91,8 +86,7 @@ public class merge_sort_step {
     // Merge sort for List<Row>, sorting by number only
     static void mergeSort(List<Row> list, int left, int right, PrintWriter writer) {
         // Recursion base case: if the selectedRows has one or zero elements, it's
-        // already
-        // sorted
+        // already sorted
         if (left < right) {
             // 1. Divide: Find the middle index to split the list into two halves
             int mid = (left + right) / 2;
@@ -102,8 +96,6 @@ public class merge_sort_step {
             mergeSort(list, mid + 1, right, writer);
             // 3. Conquer: Merge the two sorted halves
             merge(list, left, mid, right);
-            // Print the list after each merge (conquering) step
-            printRowList(list, writer);
         }
     }
 
