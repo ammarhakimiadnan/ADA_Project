@@ -20,7 +20,7 @@ public class merge_sort {
 
     public static void main(String args[]) {
         // Change the filename below to the generated dataset file
-        List<Row> rows = readDataset("dataset_1000000.csv");
+        List<Row> rows = readDataset("dataset_506803465.csv");
         int size = rows.size(); // Get the size of the dataset
         String outputFile = "merge_sort_" + size + ".csv"; // Output file name based on the selected range
         try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
