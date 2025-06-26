@@ -84,7 +84,7 @@ int extractNFromFilename(const string &filename)
         return -1;
     }
 
-    string nStr = filename.substr(pos1 + 11, pos2 - (pos1 + 11));
+    string nStr = filename.substr(pos1 + 6, pos2 - (pos1 + 6));
     return stoi(nStr);
 }
 

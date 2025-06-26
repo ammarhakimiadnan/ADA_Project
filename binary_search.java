@@ -62,7 +62,7 @@ public class binary_search{
             return -1;
         }
         
-        String nStr = filename.substring(start + 11, end);
+        String nStr = filename.substring(start + 6, end);
         return Integer.parseInt(nStr);
     }
     
