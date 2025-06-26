@@ -52,7 +52,7 @@ public class binary_search_step {
 
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            writer.println(mid + ": " + data.get(mid).toString());
+            writer.print(mid + ": " + data.get(mid).toString());
 
             if (data.get(mid).number == target) {
                 found = true;
@@ -62,13 +62,14 @@ public class binary_search_step {
             } else {
                 right = mid - 1;
             }
+            writer.println(); // Add newline after each step except the last
         }
 
         if (!found) {
-            writer.println(-1);
+            writer.print(-1); // No newline after -1
         }
     }
-
+    
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter dataset filename (e.g., merge_sort_10000.csv): ");
