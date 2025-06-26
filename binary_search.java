@@ -55,7 +55,7 @@ public class binary_search{
     }
     
     public static int extractNFromFilename(String filename) {
-        int start = filename.indexOf("merge_sort_");
+        int start = filename.indexOf("_sort_");
         int end = filename.indexOf(".csv");
         
         if (start == -1 || end == -1) {
@@ -106,7 +106,7 @@ public class binary_search{
     
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Enter dataset filename (e.g. merge_sort_10000.csv): ");
+            System.out.print("Enter dataset filename (e.g. merge_sort_10000.csv or quick_sort_10000.csv): ");
             String filename = scanner.nextLine();
             
             List<Row> rows = readDataset(filename);

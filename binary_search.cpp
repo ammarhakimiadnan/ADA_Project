@@ -76,7 +76,7 @@ int binarySearch(const vector<Row> &data, int target)
 // Extract n from filename (expects merge_sort_n.csv)
 int extractNFromFilename(const string &filename)
 {
-    size_t pos1 = filename.find("merge_sort_");
+    size_t pos1 = filename.find("_sort_");
     size_t pos2 = filename.find(".csv");
 
     if (pos1 == string::npos || pos2 == string::npos)
@@ -140,7 +140,7 @@ void runBinarySearchTests(const vector<Row> &data, const string &outputFilename)
 int main()
 {
     string filename;
-    cout << "Enter dataset filename (e.g. merge_sort_10000.csv): ";
+    cout << "Enter dataset filename (e.g. merge_sort_10000.csv or quick_sort_10000.csv): ";
     cin >> filename;
 
     vector<Row> rows = readDataset(filename);
