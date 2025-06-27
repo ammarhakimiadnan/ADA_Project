@@ -2,45 +2,54 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-class Row {
-    int number;
-    String text;
-    public Row(int number, String text) {
-        this.number = number;
-        this.text = text;
-    }
-}
-
 public class binary_search {
-    public static List<Row> readDataset(String filename) {
-        List<Row> rows = new ArrayList<>();
+    
+    static class DataEntry implements Comparable<DataEntry> {
+        final int intVal;
+        final String strVal;
+        
+        DataEntry(int intVal, String strVal) {
+            this.intVal = intVal;
+            this.strVal = strVal;
+        }
+        
+        @Override
+        public int compareTo(DataEntry other) {
+            return Integer.compare(this.intVal, other.intVal);
+        }
+    }
+    
+    public static List<DataEntry> loadAndSortDataset(String filename) throws IOException {
+        List<DataEntry> data = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",", 2);
                 if (parts.length == 2) {
                     try {
-                        int number = Integer.parseInt(parts[0]);
-                        rows.add(new Row(number, parts[1]));
+                        int intVal = Integer.parseInt(parts[0].trim());
+                        data.add(new DataEntry(intVal, parts[1].trim()));
                     } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid row: " + line);
+                        System.err.println("Warning: Skipped invalid row: " + line);
                     }
                 }
             }
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + filename);
         }
-        return rows;
+        Collections.sort(data);
+        return data;
     }
-
-    public static int binarySearch(List<Row> data, int target) {
+    
+    public static int binarySearch(List<DataEntry> data, int target) {
         int left = 0;
         int right = data.size() - 1;
+        
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            if (data.get(mid).number == target) {
+            int midVal = data.get(mid).intVal;
+            
+            if (midVal == target) {
                 return mid;
-            } else if (data.get(mid).number < target) {
+            } else if (midVal < target) {
                 left = mid + 1;
             } else {
                 right = mid - 1;
@@ -48,78 +57,67 @@ public class binary_search {
         }
         return -1;
     }
-
-    public static int extractNFromFilename(String filename) {
-        int start = filename.indexOf("_sort_");
-        int end = filename.indexOf(".csv");
-        if (start == -1 || end == -1) {
-            return -1;
+    
+    public static void runBinarySearchTests(List<DataEntry> data, String filename) throws IOException {
+        int n = data.size();
+        String outputFilename = "binary_search_" + n + ".txt";
+        
+        // Warm up JVM
+        for (int i = 0; i < 1000; i++) {
+            binarySearch(data, data.get(0).intVal);
         }
-        String nStr = filename.substring(start + 6, end);
-        return Integer.parseInt(nStr);
-    }
 
-    public static void runBinarySearchTests(List<Row> data, String outputFilename) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(outputFilename))) {
-            int n = data.size();
-            Random rand = new Random();
+        // Best case (middle element)
+        int bestTarget = data.get(n/2).intVal;
+        long bestStart = System.nanoTime();
+        for (int i = 0; i < n; i++) {
+            binarySearch(data, bestTarget);
+        }
+        double bestTime = (System.nanoTime() - bestStart) / 1_000_000.0 / n;
 
-            // Best case: middle element (O(1))
-            int bestTarget = data.get(n / 2).number;
-            long start = System.nanoTime();
-            for (int i = 0; i < n; i++) {
-                binarySearch(data, bestTarget);
-            }
-            long durationBest = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            writer.println("Best case time (ms): " + durationBest);
+        // Average case (random elements)
+        Random rand = new Random();
+        long avgStart = System.nanoTime();
+        for (int i = 0; i < n; i++) {
+            int randomIndex = rand.nextInt(n);
+            binarySearch(data, data.get(randomIndex).intVal);
+        }
+        double avgTime = (System.nanoTime() - avgStart) / 1_000_000.0 / n;
 
-            // Average case: random elements (O(log n))
-            start = System.nanoTime();
-            for (int i = 0; i < n; i++) {
-                int randomIndex = rand.nextInt(n);
-                binarySearch(data, data.get(randomIndex).number);
-            }
-            long durationAvg = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            writer.println("Average case time (ms): " + durationAvg);
+        // Worst case (non-existent element)
+        int worstTarget = data.get(n-1).intVal + 1; // Guaranteed not to exist
+        long worstStart = System.nanoTime();
+        for (int i = 0; i < n; i++) {
+            binarySearch(data, worstTarget);
+        }
+        double worstTime = (System.nanoTime() - worstStart) / 1_000_000.0 / n;
 
-            // Worst case: non-existent element (O(log n))
-            int worstTarget = -1;  // Guaranteed not to exist
-            start = System.nanoTime();
-            for (int i = 0; i < n; i++) {
-                binarySearch(data, worstTarget);
-            }
-            long durationWorst = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            writer.println("Worst case time (ms): " + durationWorst);
-
-        } catch (IOException e) {
-            System.out.println("Error writing to file: " + outputFilename);
+        try (PrintWriter writer = new PrintWriter(outputFilename)) {
+            writer.printf("Best case time: %.6f ms%n", bestTime);
+            writer.printf("Average case time: %.6f ms%n", avgTime);
+            writer.printf("Worst case time: %.6f ms%n", worstTime);
         }
     }
-
+    
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        if (args.length != 1) {
+            System.err.println("Usage: java binary_search <dataset_filename>");
+            System.exit(1);
+        }
+        
         try {
-            System.out.print("Enter dataset filename (e.g., merge_sort_10000.csv): ");
-            String filename = scanner.nextLine();
-
-            List<Row> rows = readDataset(filename);
-            if (rows.isEmpty()) {
-                System.out.println("No data loaded. Exiting.");
-                return;
+            List<DataEntry> data = loadAndSortDataset(args[0]);
+            if (data.isEmpty()) {
+                System.err.println("Error: No valid data loaded");
+                System.exit(1);
             }
-
-            int n = extractNFromFilename(filename);
-            if (n == -1) {
-                System.out.println("Invalid filename format. Exiting.");
-                return;
-            }
-
-            String outputFile = "binary_search_" + n + ".txt";
-            runBinarySearchTests(rows, outputFile);
-
-            System.out.println("Binary search performance test completed.\nResults saved to " + outputFile);
-        } finally {
-            scanner.close();
+            
+            runBinarySearchTests(data, args[0]);
+            System.out.println("Results saved to binary_search_" + data.size() + ".txt");
+            
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            System.exit(1);
         }
     }
 }

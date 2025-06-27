@@ -6,6 +6,8 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
+#include <iomanip>
 
 using namespace std;
 using namespace std::chrono;
@@ -14,13 +16,16 @@ struct Row {
     int number;
     string text;
     Row(int n, const string &t) : number(n), text(t) {}
+    bool operator<(const Row& other) const {
+        return number < other.number;
+    }
 };
 
-vector<Row> readDataset(const string &filename) {
+vector<Row> readAndSortDataset(const string &filename) {
     vector<Row> rows;
     ifstream file(filename);
     if (!file.is_open()) {
-        cout << "Error reading file: " << filename << endl;
+        cerr << "Error: Failed to open file " << filename << endl;
         return rows;
     }
 
@@ -33,10 +38,12 @@ vector<Row> readDataset(const string &filename) {
                 int number = stoi(numPart);
                 rows.emplace_back(number, textPart);
             } catch (...) {
-                // Skip invalid rows
+                cerr << "Warning: Skipped invalid row: " << line << endl;
             }
         }
     }
+    
+    sort(rows.begin(), rows.end());
     return rows;
 }
 
@@ -56,76 +63,69 @@ int binarySearch(const vector<Row> &data, int target) {
     return -1;
 }
 
-int extractNFromFilename(const string &filename) {
-    size_t pos1 = filename.find("_sort_");
-    size_t pos2 = filename.find(".csv");
-    if (pos1 == string::npos || pos2 == string::npos) {
-        return -1;
-    }
-    string nStr = filename.substr(pos1 + 6, pos2 - (pos1 + 6));
-    return stoi(nStr);
-}
-
-void runBinarySearchTests(const vector<Row> &data, const string &outputFilename) {
+void runBinarySearchTests(const vector<Row> &data) {
+    int n = data.size();
+    string outputFilename = "binary_search_" + to_string(n) + ".txt";
     ofstream writer(outputFilename);
     if (!writer.is_open()) {
-        cout << "Error writing to file: " << outputFilename << endl;
+        cerr << "Error: Failed to create output file " << outputFilename << endl;
         return;
     }
 
-    int n = data.size();
-    srand(time(0));
-
-    // Best case: middle element (O(1))
-    int bestTarget = data[n / 2].number;
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < n; i++) {
-        binarySearch(data, bestTarget);
+    // Prevent optimization
+    volatile int dummy = 0;
+    
+    // Warm up
+    for (int i = 0; i < 1000; i++) {
+        dummy += binarySearch(data, data[0].number);
     }
-    auto duration_best = duration_cast<milliseconds>(high_resolution_clock::now() - start);
-    writer << "Best case time (ms): " << duration_best.count() << endl;
 
-    // Average case: random elements (O(log n))
-    start = high_resolution_clock::now();
+    // Best case
+    int bestTarget = data[n/2].number;
+    auto bestStart = high_resolution_clock::now();
+    for (int i = 0; i < n; i++) {
+        dummy += binarySearch(data, bestTarget);
+    }
+    double bestTime = duration_cast<nanoseconds>(high_resolution_clock::now() - bestStart).count() / 1000000.0 / n;
+
+    // Average case
+    srand(time(0));
+    auto avgStart = high_resolution_clock::now();
     for (int i = 0; i < n; i++) {
         int randomIndex = rand() % n;
-        binarySearch(data, data[randomIndex].number);
+        dummy += binarySearch(data, data[randomIndex].number);
     }
-    auto duration_avg = duration_cast<milliseconds>(high_resolution_clock::now() - start);
-    writer << "Average case time (ms): " << duration_avg.count() << endl;
+    double avgTime = duration_cast<nanoseconds>(high_resolution_clock::now() - avgStart).count() / 1000000.0 / n;
 
-    // Worst case: non-existent element (O(log n))
-    int worstTarget = -1;  // Guaranteed not to exist
-    start = high_resolution_clock::now();
+    // Worst case
+    int worstTarget = data.back().number + 1;
+    auto worstStart = high_resolution_clock::now();
     for (int i = 0; i < n; i++) {
-        binarySearch(data, worstTarget);
+        dummy += binarySearch(data, worstTarget);
     }
-    auto duration_worst = duration_cast<milliseconds>(high_resolution_clock::now() - start);
-    writer << "Worst case time (ms): " << duration_worst.count() << endl;
+    double worstTime = duration_cast<nanoseconds>(high_resolution_clock::now() - worstStart).count() / 1000000.0 / n;
 
-    writer.close();
+    writer << fixed << setprecision(6);
+    writer << "Best case time: " << bestTime << " ms\n";
+    writer << "Average case time: " << avgTime << " ms\n";
+    writer << "Worst case time: " << worstTime << " ms\n";
+
+    cout << "Results saved to " << outputFilename << endl;
 }
 
-int main() {
-    string filename;
-    cout << "Enter dataset filename (e.g., merge_sort_10000.csv): ";
-    cin >> filename;
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        cerr << "Usage: " << argv[0] << " <dataset_filename>" << endl;
+        return 1;
+    }
 
-    vector<Row> rows = readDataset(filename);
+    string filename = argv[1];
+    vector<Row> rows = readAndSortDataset(filename);
     if (rows.empty()) {
-        cout << "No data loaded. Exiting." << endl;
+        cerr << "Error: No valid data loaded." << endl;
         return 1;
     }
 
-    int n = extractNFromFilename(filename);
-    if (n == -1) {
-        cout << "Invalid filename format. Exiting." << endl;
-        return 1;
-    }
-
-    string outputFile = "binary_search_" + to_string(n) + ".txt";
-    runBinarySearchTests(rows, outputFile);
-
-    cout << "Binary search performance test completed.\nResults saved to " << outputFile << endl;
+    runBinarySearchTests(rows);
     return 0;
 }
