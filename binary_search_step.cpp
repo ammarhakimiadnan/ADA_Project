@@ -1,3 +1,12 @@
+/*
+ * File: binary_search_step.cpp
+ * Implements binary search with step logging for CCP6214 Assignment
+ * Requirements:
+ *  - Log each comparison step during binary search
+ *  - Output to binary_search_step_[target].txt
+ *  - Verify dataset is sorted
+ */
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -75,8 +84,8 @@ void binarySearchStep(const vector<Row> &data, int target, ofstream &writer) {
 }
 
 int main() {
-    string filename;
     cout << "Enter dataset filename (e.g., merge_sort_10000.csv): ";
+    string filename;
     cin >> filename;
 
     vector<Row> rows = readDataset(filename);
@@ -90,9 +99,12 @@ int main() {
         return 1;
     }
 
-    int target;
     cout << "Enter target integer: ";
-    cin >> target;
+    int target;
+    if (!(cin >> target)) {
+        cerr << "Error: Invalid target input" << endl;
+        return 1;
+    }
 
     string outputFile = "binary_search_step_" + to_string(target) + ".txt";
     ofstream writer(outputFile);
