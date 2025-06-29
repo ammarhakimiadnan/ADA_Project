@@ -52,7 +52,7 @@ public class binary_search_step {
 
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            writer.print(mid + ": " + data.get(mid).toString());
+            writer.print((mid + 1) + ": " + data.get(mid).toString());
 
             if (data.get(mid).number == target) {
                 found = true;

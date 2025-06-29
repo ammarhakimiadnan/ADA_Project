@@ -65,7 +65,7 @@ void binarySearchStep(const vector<Row> &data, int target, ofstream &writer) {
 
     while (left <= right) {
         int mid = left + (right - left) / 2;
-        writer << mid << ": " << data[mid].toString();
+        writer << (mid + 1) << ": " << data[mid].toString();
 
         if (data[mid].number == target) {
             found = true;
