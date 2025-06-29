@@ -14,7 +14,7 @@ struct Row
 
     std::string toString() const
     {
-        return std::to_string(number) + "," + text;
+        return std::to_string(number) + "/" + text;
     }
 };
 
@@ -49,19 +49,22 @@ std::vector<Row> readDataset(const std::string &filename)
     return rows;
 }
 
-// Print the list in number/string format
-void printRowList(const std::vector<Row> &list, std::ofstream &writer)
+// Print the list in [number/string, ...] format
+void printRowList(const std::vector<Row> &list, std::ofstream &writer, bool brackets = true)
 {
+    if (brackets) writer << "[";
     for (size_t i = 0; i < list.size(); ++i)
     {
         writer << list[i].toString();
         if (i < list.size() - 1)
-            writer << std::endl;
+            writer << ", ";
     }
+    if (brackets) writer << "]";
+    writer << std::endl;
 }
 
-// Partition logic for Quick Sort
-int partition(std::vector<Row> &list, int low, int high)
+// Partition logic for Quick Sort with step printing
+int partition(std::vector<Row> &list, int low, int high, std::ofstream &writer)
 {
     Row pivot = list[high];
     int i = low - 1;
@@ -74,25 +77,35 @@ int partition(std::vector<Row> &list, int low, int high)
         }
     }
     std::swap(list[i + 1], list[high]);
+    
+    // Print the pivot index and current state
+    writer << "pi=" << (i + 1) << " [";
+    for (size_t idx = 0; idx < list.size(); ++idx)
+    {
+        writer << list[idx].toString();
+        if (idx < list.size() - 1)
+            writer << ", ";
+    }
+    writer << "]" << std::endl;
+
     return i + 1;
 }
 
-// Recursive Quick Sort
-void quickSort(std::vector<Row> &list, int low, int high)
+// Recursive Quick Sort with step printing
+void quickSort(std::vector<Row> &list, int low, int high, std::ofstream &writer)
 {
     if (low < high)
     {
-        int pivotIndex = partition(list, low, high);
-        quickSort(list, low, pivotIndex - 1);
-        quickSort(list, pivotIndex + 1, high);
+        int pivotIndex = partition(list, low, high, writer);
+        quickSort(list, low, pivotIndex - 1, writer);
+        quickSort(list, pivotIndex + 1, high, writer);
     }
 }
 
 int main()
 {
-    std::string inputFile = "dataset_20000.csv";
+    std::string inputFile = "dataset_sample_1000.csv";
     std::vector<Row> rows = readDataset(inputFile);
-    int size = rows.size();
 
     if (rows.empty())
     {
@@ -100,7 +113,25 @@ int main()
         return 1;
     }
 
-    std::string outputFile = "quick_sort_" + std::to_string(size) + ".csv";
+    int start, end;
+    std::cout << "Select start row: ";
+    std::cin >> start;
+    std::cout << "Select end row: ";
+    std::cin >> end;
+
+    // Adjust for 1-based indexing and validate range
+    start = std::max(1, start);
+    end = std::min(static_cast<int>(rows.size()), end);
+    if (start > end)
+    {
+        std::cerr << "Invalid range selected. Exiting." << std::endl;
+        return 1;
+    }
+
+    // Create a subvector for the selected range
+    std::vector<Row> selectedRows(rows.begin() + start - 1, rows.begin() + end);
+
+    std::string outputFile = "quick_sort_step_" + std::to_string(start) + "_" + std::to_string(end) + ".txt";
     std::ofstream writer(outputFile);
     if (!writer.is_open())
     {
@@ -108,19 +139,14 @@ int main()
         return 1;
     }
 
-    std::cout << "Quick Sort with C++" << std::endl;
-    std::cout << "Dataset Size: " << size << std::endl;
+    // Print initial state
+    printRowList(selectedRows, writer);
 
-    auto start = std::chrono::high_resolution_clock::now();
-    quickSort(rows, 0, size - 1);
-    auto end = std::chrono::high_resolution_clock::now();
+    // Perform quick sort with step printing
+    quickSort(selectedRows, 0, selectedRows.size() - 1, writer);
 
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "Time Taken: " << elapsed.count() << " ms" << std::endl;
-
-    printRowList(rows, writer);
     writer.close();
 
-    std::cout << "Quick sort with C++ completed.\nCheck " << outputFile << " for results." << std::endl;
+    std::cout << "quick sort with C++ completed.\nCheck " << outputFile << " for results." << std::endl;
     return 0;
 }
