@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class binary_search {
     
-    static class DataEntry implements Comparable<DataEntry> {
+    static class DataEntry {
         final int intVal;
         final String strVal;
         
@@ -12,14 +12,18 @@ public class binary_search {
             this.intVal = intVal;
             this.strVal = strVal;
         }
-        
-        @Override
-        public int compareTo(DataEntry other) {
-            return Integer.compare(this.intVal, other.intVal);
-        }
     }
     
-    public static List<DataEntry> loadAndSortDataset(String filename) throws IOException {
+    public static boolean isDatasetSorted(List<DataEntry> data) {
+        for (int i = 1; i < data.size(); i++) {
+            if (data.get(i).intVal < data.get(i-1).intVal) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static List<DataEntry> loadDataset(String filename) throws IOException {
         List<DataEntry> data = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -35,7 +39,12 @@ public class binary_search {
                 }
             }
         }
-        Collections.sort(data);
+        
+        if (!isDatasetSorted(data)) {
+            System.err.println("Error: Dataset must be pre-sorted");
+            return Collections.emptyList();
+        }
+        
         return data;
     }
     
@@ -85,7 +94,7 @@ public class binary_search {
         double avgTime = (System.nanoTime() - avgStart) / 1_000_000.0 / n;
 
         // Worst case (non-existent element)
-        int worstTarget = data.get(n-1).intVal + 1; // Guaranteed not to exist
+        int worstTarget = data.get(n-1).intVal + 1;
         long worstStart = System.nanoTime();
         for (int i = 0; i < n; i++) {
             binarySearch(data, worstTarget);
@@ -106,9 +115,9 @@ public class binary_search {
         }
         
         try {
-            List<DataEntry> data = loadAndSortDataset(args[0]);
+            List<DataEntry> data = loadDataset(args[0]);
             if (data.isEmpty()) {
-                System.err.println("Error: No valid data loaded");
+                System.err.println("Error: No valid data loaded or data not sorted");
                 System.exit(1);
             }
             

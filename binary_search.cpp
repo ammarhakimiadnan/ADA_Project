@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
-#include <algorithm>
 #include <iomanip>
 
 using namespace std;
@@ -16,12 +15,18 @@ struct Row {
     int number;
     string text;
     Row(int n, const string &t) : number(n), text(t) {}
-    bool operator<(const Row& other) const {
-        return number < other.number;
-    }
 };
 
-vector<Row> readAndSortDataset(const string &filename) {
+bool isDatasetSorted(const vector<Row> &data) {
+    for (size_t i = 1; i < data.size(); i++) {
+        if (data[i].number < data[i-1].number) {
+            return false;
+        }
+    }
+    return true;
+}
+
+vector<Row> readDataset(const string &filename) {
     vector<Row> rows;
     ifstream file(filename);
     if (!file.is_open()) {
@@ -43,7 +48,11 @@ vector<Row> readAndSortDataset(const string &filename) {
         }
     }
     
-    sort(rows.begin(), rows.end());
+    if (!isDatasetSorted(rows)) {
+        cerr << "Error: Dataset must be pre-sorted" << endl;
+        return vector<Row>();
+    }
+    
     return rows;
 }
 
@@ -64,6 +73,8 @@ int binarySearch(const vector<Row> &data, int target) {
 }
 
 void runBinarySearchTests(const vector<Row> &data) {
+    if (data.empty()) return;
+    
     int n = data.size();
     string outputFilename = "binary_search_" + to_string(n) + ".txt";
     ofstream writer(outputFilename);
@@ -120,9 +131,9 @@ int main(int argc, char* argv[]) {
     }
 
     string filename = argv[1];
-    vector<Row> rows = readAndSortDataset(filename);
+    vector<Row> rows = readDataset(filename);
     if (rows.empty()) {
-        cerr << "Error: No valid data loaded." << endl;
+        cerr << "Error: No valid data loaded or data not sorted." << endl;
         return 1;
     }
 
