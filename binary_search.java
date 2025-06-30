@@ -71,7 +71,6 @@ public class binary_search {
         int n = data.size();
         String outputFilename = "binary_search_" + n + ".txt";
         
-        // Warm up JVM
         for (int i = 0; i < 1000; i++) {
             binarySearch(data, data.get(0).intVal);
         }
